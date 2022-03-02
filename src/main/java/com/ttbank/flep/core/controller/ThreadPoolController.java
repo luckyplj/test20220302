@@ -38,5 +38,6 @@ public class ThreadPoolController {
         }
         //03 关闭线程池
         executor.shutdown();
+        log.info("hello");
     }
 }
