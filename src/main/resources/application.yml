@@ -1,0 +1,63 @@
+#application.yml为基本配置文件
+server:
+  port: 7010
+
+mybatis-plus:
+  # xml扫描，多个目录用逗号或者分号分隔（告诉 Mapper 所对应的 XML 文件位置）
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  # 以下配置均有默认值,可以不设置
+  global-config:
+    db-config:
+      logic-not-delete-value: 1
+      logic-delete-value: 0
+  configuration:
+    # 是否开启自动驼峰命名规则映射:从数据库列名到Java属性驼峰命名的类似映射
+    map-underscore-to-camel-case: true
+    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    auto-mapping-behavior: full
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+
+    #druid连接池配置
+    druid:
+      url: jdbc:mysql://localhost:3306/day1?serverTimezone=Asia/Shanghai&useSSL=false
+      username: root
+      password: plj824
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      #初始化连接大小
+      initial-size: 5
+      #最大连接池数量
+      max-active: 20
+      #最小连接池数量
+      min-idle: 3
+      #配置获取连接等待超时时间，单位毫秒
+      max-wait: 60000
+      #配置间隔多久才进行一次检查看，检查需要关闭的空闲连接，单位毫秒
+      time-between-eviction-runs-millis: 60000
+      #配置一个连接在池中最小的生存时间，单位毫秒
+      min-evictable-idle-time-millis: 300000
+      validation-query: select 'x'
+      #建议配置为true,不影响性能，并且保证安全性，申请连接的时候检测
+      test-while-idle: true
+      #获取连接时执行检测，建议关闭，影响性能
+      test-on-borrow: false
+      #归还连接时执行检测，建议关闭，影响性能
+      test-on-return: false
+      #检测连接是否有效的超时时间
+      validation-query-timeout: 10
+
+logging:
+  config: classpath:log4j2-dev.xml
+
+flep:
+  cluster_name: cluster5
+  subsys_code: STPM
+  contentId: 10000001
+
+
+
+
+
+

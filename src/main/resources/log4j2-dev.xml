@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="WARN" monitorInterval="600">
+    <Properties>
+        <property name="LOG_HOME" value="${sys:user.home}/logs"/>
+        <property name="APP_CODE" value="file_log"/>
+        <property name="LOG_LEVEL_PATTERN" value="%-5p"/>
+        <property name="INSTANCE_INFO_PATTERN" value="${homeName}:${sys:user.name}"/>
+        <property name="CODE_INFO_PATTERN" value="%pid:%F:%L"/>
+        <property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS"/>
+        <property name="METRIC_LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS"/>
+        <property name="APP_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}}  | ${LOG_LEVEL_PATTERN} | %X{TRACE_ID} | %t | ${CODE_INFO_PATTERN} | [%X{seq}] -%m%n"/>
+        <property name="METRIC_LOG_PATTERN" value="%d{${METRIC_LOG_DATEFORMAT_PATTERN}}%m%n"/>
+        <property name="LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} | %X{TRACE_ID}  | ${LOG_LEVEL_PATTERN} | ${INSTANCE_INFO_PATTERN} | ${CODE_INFO_PATTERN} | [%X{seq}] -%m%n"/>
+        <property name="ALERT_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}}  $${ctx:traceId:-}  | ${INSTANCE_INFO_PATTERN} |  [%X{seq}] -%m%n"/>
+    </Properties>
+    <!--先定义所有的appender-->
+    <appenders>
+        <!--这个输出控制台的配置-->
+        <console name="Console" target="SYSTEM_OUT" follow="true">
+            <!--输出日志的格式，-->
+            <PatternLayout pattern="%d{${LOG_DATEFORMAT_PATTERN}} |  ${LOG_LEVEL_PATTERN} | %t | %c:%L | [%X{seq}] -%m%n"/>
+        </console>
+
+        <!-- 这个会打印出所有的info及以下级别的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <RollingFile name="EventLogFile" fileName="${LOG_HOME}/event.log" immediateFlush="true"
+                     filePattern="${LOG_HOME}/%d{yyyyMMdd}/event.log.%i">
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy internal="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <!--保留最近30天的日志-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_HOME}" maxDepth="2">
+                    <IfFileName glob="*/app.log.*"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="AppLogFile" fileName="${LOG_HOME}/app.log" immediateFlush="true"
+                     filePattern="${LOG_HOME}/%d{yyyyMMdd}/app.log.%i">
+            <PatternLayout>
+                <Pattern>${APP_LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy internal="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+            <!--保留最近30天的日志-->
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_HOME}" maxDepth="2">
+                    <IfFileName glob="*/app.log.*"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="AlertLogFile" fileName="${LOG_HOME}/alert.log" immediateFlush="true"
+                     filePattern="${LOG_HOME}/%d{yyyyMMdd}/alert.log.%i">
+            <PatternLayout>
+                <Pattern>${ALERT_LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy internal="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="ErrorLogFile" fileName="${LOG_HOME}/error.log" immediateFlush="true"
+                     filePattern="${LOG_HOME}/%d{yyyyMMdd}/error.log.%i">
+            <PatternLayout>
+                <Pattern>${LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy internal="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+
+        </RollingFile>
+
+
+        <RollingFile name="FlepMetricLogFile" fileName="${LOG_HOME}/metric.log" immediateFlush="true"
+                     filePattern="${LOG_HOME}/%d{yyyyMMdd}/metric.log.%i">
+            <PatternLayout>
+                <Pattern>${METRIC_LOG_PATTERN}</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy internal="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="50 MB"/>
+            </Policies>
+        </RollingFile>
+
+    </appenders>
+    <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="AppLogFile" />
+            <AppenderRef ref="AlertLogFile"/>
+            <AppenderRef ref="ErrorLogFile"/>
+        </Root>
+        <AsyncLogger name="event" level="ALL" additivity="false">
+            <AppenderRef ref="EventLogFile"/>
+        </AsyncLogger>
+
+
+        <logger name="org.apache" level="warn"/>
+        <logger name="org.springframework" level="warn"/>
+        <logger name="com.netflix" level="warn"/>
+        <logger name="springfox" level="warn"/>
+
+    </loggers>
+</configuration>
