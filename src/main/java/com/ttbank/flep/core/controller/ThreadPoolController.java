@@ -40,5 +40,6 @@ public class ThreadPoolController {
         executor.shutdown();
         log.info("hello");
         log.info("hello");
+        log.info("hello");
     }
 }
